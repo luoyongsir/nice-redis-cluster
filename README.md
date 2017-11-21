@@ -1,5 +1,6 @@
-# nice-redis-cluster
-便捷快速使用redis-cluster，支持JDK,String,Jackson,FastJson四种序列化缓存对象的方式
+
+# 便捷快速使用redis-cluster
+### 支持JDK,String,Jackson,FastJson四种序列化缓存对象的方式
 
 支持Java 8
 
@@ -26,6 +27,8 @@ redis.password=password
 #redis cluster
 redis.nodes=ip:port1,ip:port2,ip:port3,ip:port4,ip:port5,ip:port6
 redis.max-redirects=3
+
+<br/>
 
 添加完以上配置后，就可以在Spring对象中注入，使用redis template了，如下所示：
 

@@ -16,25 +16,24 @@ pom.xml 依赖添加
 
 xxx.properties 添加
 
-#redis settings
-redis.minIdle=10
-redis.maxIdle=50
-redis.maxTotal=100
-redis.maxWaitMillis=3000
-redis.testOnBorrow=true
-redis.password=password
+#redis settings<br/>
+redis.minIdle=10<br/>
+redis.maxIdle=50<br/>
+redis.maxTotal=100<br/>
+redis.maxWaitMillis=3000<br/>
+redis.testOnBorrow=true<br/>
+redis.password=password<br/>
 
-#redis cluster
-redis.nodes=ip:port1,ip:port2,ip:port3,ip:port4,ip:port5,ip:port6
-redis.max-redirects=3
-
-<br/>
+#redis cluster<br/>
+redis.nodes=ip:port1,ip:port2,ip:port3,ip:port4,ip:port5,ip:port6<br/>
+redis.max-redirects=3<br/>
 
 添加完以上配置后，就可以在Spring对象中注入，使用redis template了，如下所示：
 
     @Autowired
 	private RedisTemplateJdk redisTemplateJdk;
 
+<br/>
 
 如果是web项目，需要用redis-cluster共享session，则添加如下配置
 

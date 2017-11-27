@@ -6,21 +6,16 @@ import com.nice.redis.template.RedisTemplateJson;
 import com.nice.redis.template.RedisTemplateString;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
-import org.springframework.core.io.support.ResourcePropertySource;
 import org.springframework.data.redis.connection.RedisClusterConfiguration;
-import org.springframework.data.redis.connection.RedisNode;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.stereotype.Component;
-import org.springframework.util.NumberUtils;
 import redis.clients.jedis.JedisPoolConfig;
 
-import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
-import static org.springframework.util.Assert.isTrue;
-import static org.springframework.util.Assert.notNull;
 import static org.springframework.util.StringUtils.commaDelimitedListToSet;
-import static org.springframework.util.StringUtils.split;
 
 /**
  * Redis初始化
@@ -32,7 +27,7 @@ import static org.springframework.util.StringUtils.split;
 public class InitRedis {
 
 	@Autowired
-	private ResourcePropertySource resourcePropertySource;
+	private RedisClusterCfg redisConfig;
 
 	@Autowired
 	private RedisClusterConfiguration redisClusterConfiguration;
@@ -44,42 +39,26 @@ public class InitRedis {
 	private JedisConnectionFactory jedisConnectionFactory;
 
 	/**
-	 * 配置文件加载
-	 *
-	 * @return
-	 * @throws IOException
-	 */
-	@Bean
-	public ResourcePropertySource resourcePropertySource() throws IOException {
-		return new ResourcePropertySource("redis.properties", "classpath:env/redis.properties");
-	}
-
-	/**
 	 * 初始化 redis cluster 配置，注入bean到Spring
 	 *
 	 * @return
 	 */
 	@Bean
 	public RedisClusterConfiguration redisClusterConfiguration() {
-		RedisClusterConfiguration configuration = new RedisClusterConfiguration(resourcePropertySource);
-
-		Object nodes = resourcePropertySource.getProperty("redis.nodes");
-		if (nodes != null) {
-			Set<String> hostAndPorts = commaDelimitedListToSet(nodes.toString());
+		List<String> clusterNodes = new ArrayList<>();
+		if (redisConfig.getNodes() != null) {
+			Set<String> hostAndPorts = commaDelimitedListToSet(redisConfig.getNodes());
 			for (String hostAndPort : hostAndPorts) {
-				String[] args = split(hostAndPort, ":");
-				notNull(args, "HostAndPort need to be seperated by  ':'.");
-				isTrue(args.length == 2, "Host and Port String needs to specified as host:port");
-				RedisNode node = new RedisNode(args[0], Integer.parseInt(args[1]));
-				configuration.addClusterNode(node);
+				clusterNodes.add(hostAndPort);
 			}
+			RedisClusterConfiguration configuration = new RedisClusterConfiguration(hostAndPorts);
+			Integer maxRedirects = redisConfig.getMaxRedirects();
+			if (maxRedirects != null) {
+				configuration.setMaxRedirects(maxRedirects);
+			}
+			return configuration;
 		}
-
-		Object maxRedirects = resourcePropertySource.getProperty("redis.max-redirects");
-		if (maxRedirects != null) {
-			configuration.setMaxRedirects(NumberUtils.parseNumber(maxRedirects.toString(), Integer.class));
-		}
-		return configuration;
+		return null;
 	}
 
 	/**
@@ -90,25 +69,25 @@ public class InitRedis {
 	@Bean
 	public JedisPoolConfig jedisPoolConfig() {
 		JedisPoolConfig config = new JedisPoolConfig();
-		Object minIdle = resourcePropertySource.getProperty("redis.minIdle");
+		Integer minIdle = redisConfig.getMinIdle();
 		if (minIdle != null) {
-			config.setMinIdle(Integer.parseInt(minIdle.toString()));
+			config.setMinIdle(minIdle);
 		}
-		Object maxIdle = resourcePropertySource.getProperty("redis.maxIdle");
+		Integer maxIdle = redisConfig.getMaxIdle();
 		if (maxIdle != null) {
-			config.setMaxIdle(Integer.parseInt(maxIdle.toString()));
+			config.setMaxIdle(maxIdle);
 		}
-		Object maxTotal = resourcePropertySource.getProperty("redis.maxTotal");
+		Integer maxTotal = redisConfig.getMaxTotal();
 		if (maxTotal != null) {
-			config.setMaxTotal(Integer.parseInt(maxTotal.toString()));
+			config.setMaxTotal(maxTotal);
 		}
-		Object maxWaitMillis = resourcePropertySource.getProperty("redis.maxWaitMillis");
+		Integer maxWaitMillis = redisConfig.getMaxWaitMillis();
 		if (maxWaitMillis != null) {
-			config.setMaxWaitMillis(Integer.parseInt(maxWaitMillis.toString()));
+			config.setMaxWaitMillis(maxWaitMillis);
 		}
-		Object testOnBorrow = resourcePropertySource.getProperty("redis.testOnBorrow");
+		String testOnBorrow = redisConfig.getTestOnBorrow();
 		if (testOnBorrow != null) {
-			config.setTestOnBorrow(Boolean.parseBoolean(testOnBorrow.toString()));
+			config.setTestOnBorrow(Boolean.parseBoolean(testOnBorrow));
 		}
 		return config;
 	}
@@ -121,7 +100,7 @@ public class InitRedis {
 	@Bean
 	public JedisConnectionFactory jedisConnectionFactory() {
 		JedisConnectionFactory factory = new JedisConnectionFactory(redisClusterConfiguration, jedisPoolConfig);
-		Object password = resourcePropertySource.getProperty("redis.password");
+		String password = redisConfig.getPassword();
 		if (password != null) {
 			factory.setPassword(password.toString());
 		}

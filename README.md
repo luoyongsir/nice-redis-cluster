@@ -11,7 +11,7 @@ pom.xml 依赖添加
     <dependency>
         <groupId>com.nice</groupId>
         <artifactId>nice-redis-cluster</artifactId>
-        <version>1.0.0-RELEASE</version>
+        <version>1.0.1-RELEASE</version>
     </dependency>
 
 xxx.properties 添加

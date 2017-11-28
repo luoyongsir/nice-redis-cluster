@@ -11,10 +11,9 @@ import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.stereotype.Component;
 import redis.clients.jedis.JedisPoolConfig;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Set;
 
+import static org.springframework.util.Assert.notNull;
 import static org.springframework.util.StringUtils.commaDelimitedListToSet;
 
 /**
@@ -27,7 +26,7 @@ import static org.springframework.util.StringUtils.commaDelimitedListToSet;
 public class InitRedis {
 
 	@Autowired
-	private RedisClusterCfg redisConfig;
+	private RedisClusterCfg redisCfg;
 
 	@Autowired
 	private RedisClusterConfiguration redisClusterConfiguration;
@@ -45,20 +44,14 @@ public class InitRedis {
 	 */
 	@Bean
 	public RedisClusterConfiguration redisClusterConfiguration() {
-		List<String> clusterNodes = new ArrayList<>();
-		if (redisConfig.getNodes() != null) {
-			Set<String> hostAndPorts = commaDelimitedListToSet(redisConfig.getNodes());
-			for (String hostAndPort : hostAndPorts) {
-				clusterNodes.add(hostAndPort);
-			}
-			RedisClusterConfiguration configuration = new RedisClusterConfiguration(hostAndPorts);
-			Integer maxRedirects = redisConfig.getMaxRedirects();
-			if (maxRedirects != null) {
-				configuration.setMaxRedirects(maxRedirects);
-			}
-			return configuration;
+		notNull(redisCfg.getNodes(), " redis.nodes must not null. ");
+		Set<String> hostAndPorts = commaDelimitedListToSet(redisCfg.getNodes());
+		RedisClusterConfiguration configuration = new RedisClusterConfiguration(hostAndPorts);
+		Integer maxRedirects = redisCfg.getMaxRedirects();
+		if (maxRedirects != null) {
+			configuration.setMaxRedirects(maxRedirects);
 		}
-		return null;
+		return configuration;
 	}
 
 	/**
@@ -69,23 +62,23 @@ public class InitRedis {
 	@Bean
 	public JedisPoolConfig jedisPoolConfig() {
 		JedisPoolConfig config = new JedisPoolConfig();
-		Integer minIdle = redisConfig.getMinIdle();
+		Integer minIdle = redisCfg.getMinIdle();
 		if (minIdle != null) {
 			config.setMinIdle(minIdle);
 		}
-		Integer maxIdle = redisConfig.getMaxIdle();
+		Integer maxIdle = redisCfg.getMaxIdle();
 		if (maxIdle != null) {
 			config.setMaxIdle(maxIdle);
 		}
-		Integer maxTotal = redisConfig.getMaxTotal();
+		Integer maxTotal = redisCfg.getMaxTotal();
 		if (maxTotal != null) {
 			config.setMaxTotal(maxTotal);
 		}
-		Integer maxWaitMillis = redisConfig.getMaxWaitMillis();
+		Integer maxWaitMillis = redisCfg.getMaxWaitMillis();
 		if (maxWaitMillis != null) {
 			config.setMaxWaitMillis(maxWaitMillis);
 		}
-		String testOnBorrow = redisConfig.getTestOnBorrow();
+		String testOnBorrow = redisCfg.getTestOnBorrow();
 		if (testOnBorrow != null) {
 			config.setTestOnBorrow(Boolean.parseBoolean(testOnBorrow));
 		}
@@ -100,7 +93,7 @@ public class InitRedis {
 	@Bean
 	public JedisConnectionFactory jedisConnectionFactory() {
 		JedisConnectionFactory factory = new JedisConnectionFactory(redisClusterConfiguration, jedisPoolConfig);
-		String password = redisConfig.getPassword();
+		String password = redisCfg.getPassword();
 		if (password != null) {
 			factory.setPassword(password.toString());
 		}

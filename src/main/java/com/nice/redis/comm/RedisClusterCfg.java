@@ -1,7 +1,7 @@
 package com.nice.redis.comm;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
+import org.springframework.context.annotation.Configuration;
 
 /**
  * Redis 配置文件
@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
  * @author Luo Yong
  * @date 2017-03-12
  */
-@Component
+@Configuration
 public class RedisClusterCfg {
 
 	@Value("${redis.nodes}")
@@ -31,7 +31,7 @@ public class RedisClusterCfg {
 	private Integer maxWaitMillis;
 	
 	@Value("${redis.testOnBorrow}")
-	private String testOnBorrow;
+	private Boolean testOnBorrow;
 	
 	@Value("${redis.password}")
 	private String password;
@@ -84,11 +84,11 @@ public class RedisClusterCfg {
 		this.maxWaitMillis = maxWaitMillis;
 	}
 
-	public String getTestOnBorrow() {
+	public Boolean getTestOnBorrow() {
 		return testOnBorrow;
 	}
 
-	public void setTestOnBorrow(String testOnBorrow) {
+	public void setTestOnBorrow(Boolean testOnBorrow) {
 		this.testOnBorrow = testOnBorrow;
 	}
 

@@ -78,9 +78,9 @@ public class InitRedis {
 		if (maxWaitMillis != null) {
 			config.setMaxWaitMillis(maxWaitMillis);
 		}
-		String testOnBorrow = redisCfg.getTestOnBorrow();
+		Boolean testOnBorrow = redisCfg.getTestOnBorrow();
 		if (testOnBorrow != null) {
-			config.setTestOnBorrow(Boolean.parseBoolean(testOnBorrow));
+			config.setTestOnBorrow(testOnBorrow);
 		}
 		return config;
 	}

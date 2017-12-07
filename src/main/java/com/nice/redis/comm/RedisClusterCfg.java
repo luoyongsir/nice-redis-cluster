@@ -15,7 +15,7 @@ public class RedisClusterCfg {
 	@Value("${redis.nodes}")
 	private String nodes;
 	
-	@Value("${redis.max-redirects}")
+	@Value("${redis.maxRedirects}")
 	private Integer maxRedirects;
 	
 	@Value("${redis.minIdle}")

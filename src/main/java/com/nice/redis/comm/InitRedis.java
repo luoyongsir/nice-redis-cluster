@@ -95,7 +95,7 @@ public class InitRedis {
 		JedisConnectionFactory factory = new JedisConnectionFactory(redisClusterConfiguration, jedisPoolConfig);
 		String password = redisCfg.getPassword();
 		if (password != null) {
-			factory.setPassword(password.toString());
+			factory.setPassword(password);
 		}
 		return factory;
 	}

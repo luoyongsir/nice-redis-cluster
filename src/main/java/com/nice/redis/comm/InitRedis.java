@@ -4,11 +4,13 @@ import com.nice.redis.template.RedisTemplateJackson;
 import com.nice.redis.template.RedisTemplateJdk;
 import com.nice.redis.template.RedisTemplateJson;
 import com.nice.redis.template.RedisTemplateString;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisClusterConfiguration;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
-import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 import redis.clients.jedis.JedisPoolConfig;
 
 import java.util.Set;
@@ -22,20 +24,35 @@ import static org.springframework.util.StringUtils.commaDelimitedListToSet;
  * @author Luo Yong
  * @date 2017-03-12
  */
-@Component
+@Configuration
 public class InitRedis {
 
-	@Autowired
-	private RedisClusterCfg redisCfg;
+	/**
+	 * 必填配置
+	 */
+	@Value("${redis.nodes}")
+	private String nodes;
 
-	@Autowired
-	private RedisClusterConfiguration redisClusterConfiguration;
+	@Value("${redis.maxRedirects:}")
+	private Integer maxRedirects;
 
-	@Autowired
-	private JedisPoolConfig jedisPoolConfig;
+	@Value("${redis.minIdle:}")
+	private Integer minIdle;
 
-	@Autowired
-	private JedisConnectionFactory jedisConnectionFactory;
+	@Value("${redis.maxIdle:}")
+	private Integer maxIdle;
+
+	@Value("${redis.maxTotal:}")
+	private Integer maxTotal;
+
+	@Value("${redis.maxWaitMillis:}")
+	private Integer maxWaitMillis;
+
+	@Value("${redis.testOnBorrow:}")
+	private Boolean testOnBorrow;
+
+	@Value("${redis.password:}")
+	private String password;
 
 	/**
 	 * 初始化 redis cluster 配置，注入bean到Spring
@@ -44,10 +61,10 @@ public class InitRedis {
 	 */
 	@Bean
 	public RedisClusterConfiguration redisClusterConfiguration() {
-		notNull(redisCfg.getNodes(), " redis.nodes must not null. ");
-		Set<String> hostAndPorts = commaDelimitedListToSet(redisCfg.getNodes());
+		notNull(getNodes(), " redis.nodes must not null. ");
+		Set<String> hostAndPorts = commaDelimitedListToSet(getNodes());
 		RedisClusterConfiguration configuration = new RedisClusterConfiguration(hostAndPorts);
-		Integer maxRedirects = redisCfg.getMaxRedirects();
+		Integer maxRedirects = getMaxRedirects();
 		if (maxRedirects != null) {
 			configuration.setMaxRedirects(maxRedirects);
 		}
@@ -62,23 +79,23 @@ public class InitRedis {
 	@Bean
 	public JedisPoolConfig jedisPoolConfig() {
 		JedisPoolConfig config = new JedisPoolConfig();
-		Integer minIdle = redisCfg.getMinIdle();
+		Integer minIdle = getMinIdle();
 		if (minIdle != null) {
 			config.setMinIdle(minIdle);
 		}
-		Integer maxIdle = redisCfg.getMaxIdle();
+		Integer maxIdle = getMaxIdle();
 		if (maxIdle != null) {
 			config.setMaxIdle(maxIdle);
 		}
-		Integer maxTotal = redisCfg.getMaxTotal();
+		Integer maxTotal = getMaxTotal();
 		if (maxTotal != null) {
 			config.setMaxTotal(maxTotal);
 		}
-		Integer maxWaitMillis = redisCfg.getMaxWaitMillis();
+		Integer maxWaitMillis = getMaxWaitMillis();
 		if (maxWaitMillis != null) {
 			config.setMaxWaitMillis(maxWaitMillis);
 		}
-		Boolean testOnBorrow = redisCfg.getTestOnBorrow();
+		Boolean testOnBorrow = getTestOnBorrow();
 		if (testOnBorrow != null) {
 			config.setTestOnBorrow(testOnBorrow);
 		}
@@ -91,35 +108,103 @@ public class InitRedis {
 	 * @return
 	 */
 	@Bean
-	public JedisConnectionFactory jedisConnectionFactory() {
+	public JedisConnectionFactory jedisConnectionFactory(
+			@Qualifier("redisClusterConfiguration") RedisClusterConfiguration redisClusterConfiguration,
+			@Qualifier("jedisPoolConfig") JedisPoolConfig jedisPoolConfig) {
 		JedisConnectionFactory factory = new JedisConnectionFactory(redisClusterConfiguration, jedisPoolConfig);
-		String password = redisCfg.getPassword();
-		if (password != null) {
-			factory.setPassword(password);
+		String password = getPassword();
+		if (password != null && !StringUtils.isEmpty(password.trim())) {
+			factory.setPassword(password.trim());
 		}
 		return factory;
 	}
 
 	@Bean
-	public RedisTemplateJackson redisTemplateJackson() {
+	public RedisTemplateJackson redisTemplateJackson(
+			@Qualifier("jedisConnectionFactory") JedisConnectionFactory jedisConnectionFactory) {
 		return new RedisTemplateJackson(jedisConnectionFactory);
 	}
 
 	@Bean
-	public RedisTemplateJdk redisTemplateJdk() {
+	public RedisTemplateJdk redisTemplateJdk(
+			@Qualifier("jedisConnectionFactory") JedisConnectionFactory jedisConnectionFactory) {
 		return new RedisTemplateJdk(jedisConnectionFactory);
 	}
 
 	@Bean
-	public RedisTemplateJson redisTemplateJson() {
+	public RedisTemplateJson redisTemplateJson(
+			@Qualifier("jedisConnectionFactory") JedisConnectionFactory jedisConnectionFactory) {
 		return new RedisTemplateJson(jedisConnectionFactory);
 	}
 
 	@Bean
-	public RedisTemplateString redisTemplateString() {
+	public RedisTemplateString redisTemplateString(
+			@Qualifier("jedisConnectionFactory") JedisConnectionFactory jedisConnectionFactory) {
 		return new RedisTemplateString(jedisConnectionFactory);
 	}
 
-	private InitRedis() {
+	public String getNodes() {
+		return nodes;
 	}
+
+	public void setNodes(String nodes) {
+		this.nodes = nodes;
+	}
+
+	public Integer getMaxRedirects() {
+		return maxRedirects;
+	}
+
+	public void setMaxRedirects(Integer maxRedirects) {
+		this.maxRedirects = maxRedirects;
+	}
+
+	public Integer getMinIdle() {
+		return minIdle;
+	}
+
+	public void setMinIdle(Integer minIdle) {
+		this.minIdle = minIdle;
+	}
+
+	public Integer getMaxIdle() {
+		return maxIdle;
+	}
+
+	public void setMaxIdle(Integer maxIdle) {
+		this.maxIdle = maxIdle;
+	}
+
+	public Integer getMaxTotal() {
+		return maxTotal;
+	}
+
+	public void setMaxTotal(Integer maxTotal) {
+		this.maxTotal = maxTotal;
+	}
+
+	public Integer getMaxWaitMillis() {
+		return maxWaitMillis;
+	}
+
+	public void setMaxWaitMillis(Integer maxWaitMillis) {
+		this.maxWaitMillis = maxWaitMillis;
+	}
+
+	public Boolean getTestOnBorrow() {
+		return testOnBorrow;
+	}
+
+	public void setTestOnBorrow(Boolean testOnBorrow) {
+		this.testOnBorrow = testOnBorrow;
+	}
+
+	public String getPassword() {
+		return password;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
+	}
+
 }

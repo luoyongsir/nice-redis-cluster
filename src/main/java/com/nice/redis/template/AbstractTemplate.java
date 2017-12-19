@@ -8,6 +8,7 @@ import org.springframework.data.redis.serializer.RedisSerializer;
 import org.springframework.util.CollectionUtils;
 
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -122,7 +123,7 @@ public abstract class AbstractTemplate {
 		if (pattern!=null && !"".equals(pattern)) {
 			return template.keys(pattern + "*");
 		}
-		return null;
+		return new HashSet<>();
 	}
 
 	/**

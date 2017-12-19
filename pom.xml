@@ -19,7 +19,7 @@
 		<dependency>
 			<groupId>com.alibaba</groupId>
 			<artifactId>fastjson</artifactId>
-			<version>1.2.41</version>
+			<version>1.2.43</version>
 		</dependency>
 		<dependency>
 			<groupId>redis.clients</groupId>
@@ -29,7 +29,7 @@
 		<dependency>
 			<groupId>org.springframework.data</groupId>
 			<artifactId>spring-data-redis</artifactId>
-			<version>1.8.8.RELEASE</version>
+			<version>2.0.2.RELEASE</version>
 		</dependency>
     </dependencies>
 

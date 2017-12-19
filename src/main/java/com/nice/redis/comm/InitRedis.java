@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisClusterConfiguration;
+import org.springframework.data.redis.connection.RedisPassword;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.util.StringUtils;
 import redis.clients.jedis.JedisPoolConfig;
@@ -68,6 +69,10 @@ public class InitRedis {
 		if (maxRedirects != null) {
 			configuration.setMaxRedirects(maxRedirects);
 		}
+		String password = getPassword();
+		if (password != null && !StringUtils.isEmpty(password.trim())) {
+			configuration.setPassword(RedisPassword.of(password.trim()));
+		}
 		return configuration;
 	}
 
@@ -112,10 +117,6 @@ public class InitRedis {
 			@Qualifier("redisClusterConfiguration") RedisClusterConfiguration redisClusterConfiguration,
 			@Qualifier("jedisPoolConfig") JedisPoolConfig jedisPoolConfig) {
 		JedisConnectionFactory factory = new JedisConnectionFactory(redisClusterConfiguration, jedisPoolConfig);
-		String password = getPassword();
-		if (password != null && !StringUtils.isEmpty(password.trim())) {
-			factory.setPassword(password.trim());
-		}
 		return factory;
 	}
 

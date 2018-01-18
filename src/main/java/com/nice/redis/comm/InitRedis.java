@@ -147,64 +147,31 @@ public class InitRedis {
 		return nodes;
 	}
 
-	public void setNodes(String nodes) {
-		this.nodes = nodes;
-	}
-
 	public Integer getMaxRedirects() {
 		return maxRedirects;
-	}
-
-	public void setMaxRedirects(Integer maxRedirects) {
-		this.maxRedirects = maxRedirects;
 	}
 
 	public Integer getMinIdle() {
 		return minIdle;
 	}
 
-	public void setMinIdle(Integer minIdle) {
-		this.minIdle = minIdle;
-	}
-
 	public Integer getMaxIdle() {
 		return maxIdle;
-	}
-
-	public void setMaxIdle(Integer maxIdle) {
-		this.maxIdle = maxIdle;
 	}
 
 	public Integer getMaxTotal() {
 		return maxTotal;
 	}
 
-	public void setMaxTotal(Integer maxTotal) {
-		this.maxTotal = maxTotal;
-	}
-
 	public Integer getMaxWaitMillis() {
 		return maxWaitMillis;
-	}
-
-	public void setMaxWaitMillis(Integer maxWaitMillis) {
-		this.maxWaitMillis = maxWaitMillis;
 	}
 
 	public Boolean getTestOnBorrow() {
 		return testOnBorrow;
 	}
 
-	public void setTestOnBorrow(Boolean testOnBorrow) {
-		this.testOnBorrow = testOnBorrow;
-	}
-
 	public String getPassword() {
 		return password;
 	}
-
-	public void setPassword(String password) {
-		this.password = password;
-	}
-
 }

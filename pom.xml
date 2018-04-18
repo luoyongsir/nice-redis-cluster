@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
 	<groupId>com.nice</groupId>
     <artifactId>nice-redis-cluster</artifactId>
-	<version>1.0.1-RELEASE</version>
+	<version>1.0.2-RELEASE</version>
 	<packaging>jar</packaging>
 	<name>nice-redis-cluster</name>
 
@@ -19,7 +19,7 @@
 		<dependency>
 			<groupId>com.alibaba</groupId>
 			<artifactId>fastjson</artifactId>
-			<version>1.2.43</version>
+			<version>1.2.47</version>
 		</dependency>
 		<dependency>
 			<groupId>redis.clients</groupId>
@@ -29,7 +29,7 @@
 		<dependency>
 			<groupId>org.springframework.data</groupId>
 			<artifactId>spring-data-redis</artifactId>
-			<version>1.8.9.RELEASE</version>
+			<version>1.8.11.RELEASE</version>
 		</dependency>
     </dependencies>
 

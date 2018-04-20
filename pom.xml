@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
 	<groupId>com.nice</groupId>
     <artifactId>nice-redis-cluster</artifactId>
-	<version>1.0.2-RELEASE</version>
+	<version>1.0.3-RELEASE</version>
 	<packaging>jar</packaging>
 	<name>nice-redis-cluster</name>
 

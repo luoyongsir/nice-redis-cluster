@@ -9,6 +9,7 @@ import org.springframework.util.CollectionUtils;
 
 import java.util.Date;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -34,6 +35,15 @@ public abstract class AbstractTemplate {
 			byte[] value = con.get(template.getStringSerializer().serialize(key));
 			return serializer.deserialize(value);
 		});
+	}
+
+	/**
+	 * 通过key获取缓存，Optional封装
+	 * @param key
+	 * @return
+	 */
+	public <T> Optional<T> getOptional(final String key) {
+		return Optional.ofNullable(get(key));
 	}
 
 	/**

@@ -139,7 +139,7 @@ public abstract class AbstractTemplate {
 	/**
 	 * 设置缓存key的有效时间
 	 * @param key 缓存key
-	 * @param timeout 缓存时常
+	 * @param timeout 缓存时长
 	 * @param unit 时间单位
 	 * @return
 	 */

@@ -70,8 +70,7 @@ public class RedisTemplateString extends AbstractTemplate {
      * @param tryLockTimeoutMs 尝试获取锁的时间，如果该时间段内未获取到锁，则返回false
      * @return 是否获取成功
      */
-    public boolean lock(String lockKey, String lockValue, long expireTimeMs, long tryLockTimeoutMs)
-        throws InterruptedException {
+    public boolean lock(String lockKey, String lockValue, long expireTimeMs, long tryLockTimeoutMs) {
         if (tryLockTimeoutMs <= 0L) {
             tryLockTimeoutMs = DEFAULT_TRY_LOCK_TIME_OUT;
         }
@@ -82,7 +81,11 @@ public class RedisTemplateString extends AbstractTemplate {
                 return true;
             } else {
                 // 等待50ms后继续尝试获取锁
-                Thread.sleep(50L);
+                try {
+                    Thread.sleep(50L);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
             }
         }
         return false;

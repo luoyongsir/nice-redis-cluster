@@ -11,11 +11,11 @@ import org.springframework.data.redis.serializer.RedisSerializer;
  */
 public class RedisTemplateJdk extends AbstractTemplate {
 
-	public RedisTemplateJdk(JedisConnectionFactory jedisConnectionFactory) {
-		super();
-		template.setConnectionFactory(jedisConnectionFactory);
-		template.setKeySerializer(template.getStringSerializer());
-		template.afterPropertiesSet();
-		serializer = (RedisSerializer<Object>) template.getDefaultSerializer();
-	}
+    public RedisTemplateJdk(JedisConnectionFactory jedisConnectionFactory) {
+        super();
+        template.setConnectionFactory(jedisConnectionFactory);
+        template.setKeySerializer(template.getStringSerializer());
+        template.afterPropertiesSet();
+        serializer = (RedisSerializer<Object>) template.getDefaultSerializer();
+    }
 }

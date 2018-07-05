@@ -12,15 +12,15 @@ import com.alibaba.fastjson.support.spring.GenericFastJsonRedisSerializer;
  */
 public class RedisTemplateJson extends AbstractTemplate {
 
-	public RedisTemplateJson(JedisConnectionFactory jedisConnectionFactory) {
-		super();
-		template.setConnectionFactory(jedisConnectionFactory);
-		// key只用String序列化
-		template.setKeySerializer(template.getStringSerializer());
-		// fastJson 序列化
-		template.setDefaultSerializer(new GenericFastJsonRedisSerializer());
-		template.afterPropertiesSet();
-		serializer = (RedisSerializer<Object>) template.getDefaultSerializer();
-	}
+    public RedisTemplateJson(JedisConnectionFactory jedisConnectionFactory) {
+        super();
+        template.setConnectionFactory(jedisConnectionFactory);
+        // key只用String序列化
+        template.setKeySerializer(template.getStringSerializer());
+        // fastJson 序列化
+        template.setDefaultSerializer(new GenericFastJsonRedisSerializer());
+        template.afterPropertiesSet();
+        serializer = (RedisSerializer<Object>) template.getDefaultSerializer();
+    }
 
 }

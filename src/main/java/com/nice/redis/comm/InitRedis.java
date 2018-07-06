@@ -179,6 +179,7 @@ public class InitRedis {
     /**
      * 限制 Key 只能是 String
      * String 序列化 Key，String 序列化 Value
+     * 与 StringRedisTemplate 类似
      *
      * @param jedisConnectionFactory
      * @return

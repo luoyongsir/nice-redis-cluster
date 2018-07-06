@@ -10,6 +10,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisClusterConfiguration;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.util.StringUtils;
 import redis.clients.jedis.JedisPoolConfig;
 
@@ -28,7 +29,7 @@ import static org.springframework.util.StringUtils.commaDelimitedListToSet;
 public class InitRedis {
 
     /**
-     * 必填配置
+     * redis的节点，必填
      */
     @Value("${redis.nodes}")
     private String nodes;
@@ -119,24 +120,69 @@ public class InitRedis {
         return factory;
     }
 
+    /**
+     * JDK 序列化 Key 和 Value，不做任何限制
+     *
+     * @param jedisConnectionFactory
+     * @param <K>
+     * @param <V>
+     * @return
+     */
+    @Bean
+    public <K, V> RedisTemplate<K, V> redisTemplate(
+        @Qualifier("jedisConnectionFactory") JedisConnectionFactory jedisConnectionFactory) {
+        RedisTemplate<K, V> redisTemplate = new RedisTemplate<>();
+        redisTemplate.setConnectionFactory(jedisConnectionFactory);
+        redisTemplate.afterPropertiesSet();
+        return redisTemplate;
+    }
+
+    /**
+     * 限制 Key 只能是 String
+     * String 序列化 Key，Jackson 序列化 Value
+     *
+     * @param jedisConnectionFactory
+     * @return
+     */
     @Bean
     public RedisTemplateJackson redisTemplateJackson(
         @Qualifier("jedisConnectionFactory") JedisConnectionFactory jedisConnectionFactory) {
         return new RedisTemplateJackson(jedisConnectionFactory);
     }
 
+    /**
+     * 限制 Key 只能是 String
+     * String 序列化 Key，JDK 序列化 Value
+     *
+     * @param jedisConnectionFactory
+     * @return
+     */
     @Bean
     public RedisTemplateJdk redisTemplateJdk(
         @Qualifier("jedisConnectionFactory") JedisConnectionFactory jedisConnectionFactory) {
         return new RedisTemplateJdk(jedisConnectionFactory);
     }
 
+    /**
+     * 限制 Key 只能是 String
+     * String 序列化 Key，FastJson 序列化 Value
+     *
+     * @param jedisConnectionFactory
+     * @return
+     */
     @Bean
     public RedisTemplateJson redisTemplateJson(
         @Qualifier("jedisConnectionFactory") JedisConnectionFactory jedisConnectionFactory) {
         return new RedisTemplateJson(jedisConnectionFactory);
     }
 
+    /**
+     * 限制 Key 只能是 String
+     * String 序列化 Key，String 序列化 Value
+     *
+     * @param jedisConnectionFactory
+     * @return
+     */
     @Bean
     public RedisTemplateString redisTemplateString(
         @Qualifier("jedisConnectionFactory") JedisConnectionFactory jedisConnectionFactory) {

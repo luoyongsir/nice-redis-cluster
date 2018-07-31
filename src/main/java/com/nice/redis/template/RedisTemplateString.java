@@ -24,6 +24,7 @@ public class RedisTemplateString extends AbstractTemplate {
     }
 
     private static final String OK = "OK";
+    private static final String ONE = "1";
 
     /**
      * 锁的默认过期时间，单位毫秒
@@ -99,7 +100,7 @@ public class RedisTemplateString extends AbstractTemplate {
      * @return 是否释放成功
      */
     public boolean unLock(String lockKey, String lockValue) {
-        String result = template.execute(unlockScript, Collections.singletonList(lockKey), lockValue);
-        return OK.equals(result);
+        Object result = template.execute(unlockScript, Collections.singletonList(lockKey), lockValue);
+        return ONE.equals(String.valueOf(result));
     }
 }

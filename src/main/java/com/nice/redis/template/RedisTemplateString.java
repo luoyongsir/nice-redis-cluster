@@ -51,12 +51,12 @@ public class RedisTemplateString extends AbstractTemplate {
      * @param expireTimeMs 过期时间
      * @return 是否获取成功
      */
-    public boolean lock(String lockKey, String lockValue, long expireTimeMs) {
-        if (expireTimeMs <= 0L) {
+    public boolean lock(String lockKey, String lockValue, Long expireTimeMs) {
+        if (expireTimeMs == null || expireTimeMs <= 0L) {
             expireTimeMs = DEFAULT_LOCK_TIME_OUT;
         }
         // 后面的三个参数分别对应了scriptLock字符串中的三个变量值，KEYS[1]，ARGV[1]，ARGV[2]，含义为锁的key，key对应的value，以及key的存在时间(单位毫秒)
-        String result = template.execute(lockScript, Collections.singletonList(lockKey), lockValue, expireTimeMs);
+        String result = template.execute(lockScript, Collections.singletonList(lockKey), lockValue, expireTimeMs.toString());
         // 返回“OK”代表拿到锁
         return OK.equals(result);
     }
@@ -70,7 +70,7 @@ public class RedisTemplateString extends AbstractTemplate {
      * @param tryLockTimeoutMs 尝试获取锁的时间，如果该时间段内未获取到锁，则返回false
      * @return 是否获取成功
      */
-    public boolean lock(String lockKey, String lockValue, long expireTimeMs, long tryLockTimeoutMs) {
+    public boolean lock(String lockKey, String lockValue, Long expireTimeMs, long tryLockTimeoutMs) {
         if (tryLockTimeoutMs <= 0L) {
             tryLockTimeoutMs = DEFAULT_TRY_LOCK_TIME_OUT;
         }

@@ -18,7 +18,7 @@ import java.util.concurrent.TimeUnit;
  * key全部限定为 String 类型 <br/>
  *
  * @author Luo Yong
- * @date 2017-03-12
+ * @date 2019-03-01
  */
 public abstract class AbstractTemplate {
 

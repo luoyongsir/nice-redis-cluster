@@ -12,6 +12,8 @@ pom.xml 依赖添加
         <version>latest.version</version>
     </dependency>
 
+<font color=gray size=2>*1.x 版本client是 jedis，2.x 版本是 lettuce*</font>
+
 xxx.properties 添加
 
 #redis 可选配置<br/>

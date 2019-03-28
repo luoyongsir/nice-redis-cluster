@@ -1,21 +1,24 @@
 package com.nice.redis.template;
 
-import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
+import io.lettuce.core.SetArgs;
+import io.lettuce.core.api.async.RedisAsyncCommands;
+import io.lettuce.core.api.sync.RedisCommands;
+import io.lettuce.core.cluster.api.async.RedisAdvancedClusterAsyncCommands;
+import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.serializer.RedisSerializer;
-import redis.clients.jedis.JedisCommands;
 
 /**
  * String序列化缓存对象
  *
  * @author Luo Yong
- * @date 2017-03-12
+ * @date 2019-03-01
  */
 public class RedisTemplateString extends AbstractTemplate {
 
-    public RedisTemplateString(JedisConnectionFactory jedisConnectionFactory) {
+    public RedisTemplateString(LettuceConnectionFactory lettuceConnectionFactory) {
         super();
-        template.setConnectionFactory(jedisConnectionFactory);
+        template.setConnectionFactory(lettuceConnectionFactory);
         template.setDefaultSerializer(template.getStringSerializer());
         template.afterPropertiesSet();
         serializer = (RedisSerializer<Object>) template.getDefaultSerializer();
@@ -43,9 +46,22 @@ public class RedisTemplateString extends AbstractTemplate {
             expireTimeMs = DEFAULT_LOCK_TIME_OUT;
         }
         final long expire = expireTimeMs;
+        final byte[] keyBytes = template.getStringSerializer().serialize(lockKey);
+        final byte[] valBytes = template.getStringSerializer().serialize(lockValue);
         String result = template.execute((RedisCallback<String>) con -> {
-            JedisCommands commands = (JedisCommands) con.getNativeConnection();
-            return commands.set(lockKey, lockValue, "NX", "PX", expire);
+            Object nativeConnection = con.getNativeConnection();
+            if (nativeConnection instanceof RedisAdvancedClusterAsyncCommands) {
+                RedisAdvancedClusterAsyncCommands clusterAsyncCommands = (RedisAdvancedClusterAsyncCommands) nativeConnection;
+                return clusterAsyncCommands.getStatefulConnection().sync()
+                        .set(keyBytes, valBytes, SetArgs.Builder.nx().px(expire));
+            } else if (nativeConnection instanceof RedisAsyncCommands) {
+                RedisAsyncCommands redisAsyncCommands = (RedisAsyncCommands) nativeConnection;
+                return redisAsyncCommands.getStatefulConnection().sync()
+                        .set(keyBytes, valBytes, SetArgs.Builder.nx().px(expire));
+            } else {
+                RedisCommands commands = (RedisCommands) nativeConnection;
+                return commands.set(lockKey, lockValue, SetArgs.Builder.nx().px(expire));
+            }
         });
         return OK.equals(result);
     }
@@ -83,7 +99,7 @@ public class RedisTemplateString extends AbstractTemplate {
     /**
      * 释放分布式锁
      *
-     * @param lockKey   锁
+     * @param lockKey 锁
      * @return 是否释放成功
      */
     public boolean unLock(String lockKey) {

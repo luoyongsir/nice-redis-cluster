@@ -1,18 +1,20 @@
 package com.nice.redis.comm;
 
-import com.nice.redis.template.RedisTemplateJackson;
 import com.nice.redis.template.RedisTemplateJdk;
 import com.nice.redis.template.RedisTemplateJson;
 import com.nice.redis.template.RedisTemplateString;
+import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisClusterConfiguration;
-import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
+import org.springframework.data.redis.connection.RedisPassword;
+import org.springframework.data.redis.connection.lettuce.LettuceClientConfiguration;
+import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
+import org.springframework.data.redis.connection.lettuce.LettucePoolingClientConfiguration;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.util.StringUtils;
-import redis.clients.jedis.JedisPoolConfig;
 
 import java.util.Set;
 
@@ -23,7 +25,7 @@ import static org.springframework.util.StringUtils.commaDelimitedListToSet;
  * Redis初始化
  *
  * @author Luo Yong
- * @date 2017-03-12
+ * @date 2019-03-01
  */
 @Configuration
 public class InitRedis {
@@ -69,38 +71,41 @@ public class InitRedis {
         if (maxRedirects != null) {
             configuration.setMaxRedirects(maxRedirects);
         }
+        String password = getPassword();
+        if (password != null && !StringUtils.isEmpty(password.trim())) {
+            configuration.setPassword(RedisPassword.of(password.trim()));
+        }
         return configuration;
     }
 
     /**
-     * 连接池配置
-     *
      * @return
      */
     @Bean
-    public JedisPoolConfig jedisPoolConfig() {
-        JedisPoolConfig config = new JedisPoolConfig();
+    public LettuceClientConfiguration lettuceClientConfiguration() {
+        GenericObjectPoolConfig poolConfig = new GenericObjectPoolConfig();
         Integer minIdle = getMinIdle();
         if (minIdle != null) {
-            config.setMinIdle(minIdle);
+            poolConfig.setMinIdle(minIdle);
         }
         Integer maxIdle = getMaxIdle();
         if (maxIdle != null) {
-            config.setMaxIdle(maxIdle);
+            poolConfig.setMaxIdle(maxIdle);
         }
         Integer maxTotal = getMaxTotal();
         if (maxTotal != null) {
-            config.setMaxTotal(maxTotal);
+            poolConfig.setMaxTotal(maxTotal);
         }
         Integer maxWaitMillis = getMaxWaitMillis();
         if (maxWaitMillis != null) {
-            config.setMaxWaitMillis(maxWaitMillis);
+            poolConfig.setMaxWaitMillis(maxWaitMillis);
         }
         Boolean testOnBorrow = getTestOnBorrow();
         if (testOnBorrow != null) {
-            config.setTestOnBorrow(testOnBorrow);
+            poolConfig.setTestOnBorrow(testOnBorrow);
         }
-        return config;
+
+        return LettucePoolingClientConfiguration.builder().poolConfig(poolConfig).build();
     }
 
     /**
@@ -109,71 +114,53 @@ public class InitRedis {
      * @return
      */
     @Bean
-    public JedisConnectionFactory jedisConnectionFactory(
-        @Qualifier("redisClusterConfiguration") RedisClusterConfiguration redisClusterConfiguration,
-        @Qualifier("jedisPoolConfig") JedisPoolConfig jedisPoolConfig) {
-        JedisConnectionFactory factory = new JedisConnectionFactory(redisClusterConfiguration, jedisPoolConfig);
-        String password = getPassword();
-        if (password != null && !StringUtils.isEmpty(password.trim())) {
-            factory.setPassword(password.trim());
-        }
-        return factory;
+    public LettuceConnectionFactory lettuceConnectionFactory(
+            @Qualifier("redisClusterConfiguration") RedisClusterConfiguration redisClusterConfiguration,
+            @Qualifier("lettuceClientConfiguration") LettuceClientConfiguration lettuceClientConfiguration) {
+        return new LettuceConnectionFactory(redisClusterConfiguration, lettuceClientConfiguration);
     }
 
     /**
      * JDK 序列化 Key 和 Value，不做任何限制
      *
-     * @param jedisConnectionFactory
+     * @param lettuceConnectionFactory
      * @param <K>
      * @param <V>
      * @return
      */
     @Bean
     public <K, V> RedisTemplate<K, V> redisTemplate(
-        @Qualifier("jedisConnectionFactory") JedisConnectionFactory jedisConnectionFactory) {
+            @Qualifier("lettuceConnectionFactory") LettuceConnectionFactory lettuceConnectionFactory) {
         RedisTemplate<K, V> redisTemplate = new RedisTemplate<>();
-        redisTemplate.setConnectionFactory(jedisConnectionFactory);
+        redisTemplate.setConnectionFactory(lettuceConnectionFactory);
         redisTemplate.afterPropertiesSet();
         return redisTemplate;
     }
 
     /**
      * 限制 Key 只能是 String
-     * String 序列化 Key，Jackson 序列化 Value
-     *
-     * @param jedisConnectionFactory
-     * @return
-     */
-    @Bean
-    public RedisTemplateJackson redisTemplateJackson(
-        @Qualifier("jedisConnectionFactory") JedisConnectionFactory jedisConnectionFactory) {
-        return new RedisTemplateJackson(jedisConnectionFactory);
-    }
-
-    /**
-     * 限制 Key 只能是 String
      * String 序列化 Key，JDK 序列化 Value
      *
-     * @param jedisConnectionFactory
+     * @param lettuceConnectionFactory
      * @return
      */
     @Bean
     public RedisTemplateJdk redisTemplateJdk(
-        @Qualifier("jedisConnectionFactory") JedisConnectionFactory jedisConnectionFactory) {
-        return new RedisTemplateJdk(jedisConnectionFactory);
+            @Qualifier("lettuceConnectionFactory") LettuceConnectionFactory lettuceConnectionFactory) {
+        return new RedisTemplateJdk(lettuceConnectionFactory);
     }
 
     /**
      * 限制 Key 只能是 String
      * String 序列化 Key，FastJson 序列化 Value
      *
-     * @param jedisConnectionFactory
+     * @param lettuceConnectionFactory
      * @return
      */
     @Bean
     public RedisTemplateJson redisTemplateJson(
-        @Qualifier("jedisConnectionFactory") JedisConnectionFactory jedisConnectionFactory) {
-        return new RedisTemplateJson(jedisConnectionFactory);
+            @Qualifier("lettuceConnectionFactory") LettuceConnectionFactory lettuceConnectionFactory) {
+        return new RedisTemplateJson(lettuceConnectionFactory);
     }
 
     /**
@@ -181,13 +168,13 @@ public class InitRedis {
      * String 序列化 Key，String 序列化 Value
      * 与 StringRedisTemplate 类似
      *
-     * @param jedisConnectionFactory
+     * @param lettuceConnectionFactory
      * @return
      */
     @Bean
     public RedisTemplateString redisTemplateString(
-        @Qualifier("jedisConnectionFactory") JedisConnectionFactory jedisConnectionFactory) {
-        return new RedisTemplateString(jedisConnectionFactory);
+            @Qualifier("lettuceConnectionFactory") LettuceConnectionFactory lettuceConnectionFactory) {
+        return new RedisTemplateString(lettuceConnectionFactory);
     }
 
     public String getNodes() {

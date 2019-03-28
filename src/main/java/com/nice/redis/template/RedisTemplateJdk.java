@@ -1,19 +1,19 @@
 package com.nice.redis.template;
 
-import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
+import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.serializer.RedisSerializer;
 
 /**
  * jdk 自带序列化缓存对象
  *
  * @author Luo Yong
- * @date 2017-03-12
+ * @date 2019-03-01
  */
 public class RedisTemplateJdk extends AbstractTemplate {
 
-    public RedisTemplateJdk(JedisConnectionFactory jedisConnectionFactory) {
+    public RedisTemplateJdk(LettuceConnectionFactory lettuceConnectionFactory) {
         super();
-        template.setConnectionFactory(jedisConnectionFactory);
+        template.setConnectionFactory(lettuceConnectionFactory);
         template.setKeySerializer(template.getStringSerializer());
         template.afterPropertiesSet();
         serializer = (RedisSerializer<Object>) template.getDefaultSerializer();
